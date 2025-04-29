@@ -1,5 +1,24 @@
 # BSC Analytics Engineering Coding Standards
 
+## Table of Contents
+
+- [Introduction](#introduction)
+- [General Coding Standards](#general-coding-standards)
+  - [Code Formatting](#code-formatting)
+  - [Naming Conventions](#naming-conventions)
+  - [Commenting and Documentation](#commenting-and-documentation)
+- [Error Handling](#error-handling)
+- [Code Organization and Structure](#code-organization-and-structure)
+- [Version Control Practices](#version-control-practices)
+- [Security Best Practices](#security-best-practices)
+- [Performance and Efficiency](#performance-and-efficiency)
+- [Language-Specific Standards](#language-specific-standards)
+  - [Terraform (Infrastructure as Code)](#terraform-infrastructure-as-code)
+  - [JavaScript (Frontend)](#javascript-frontend)
+  - [Python (Backend, Scripting, and Notebooks)](#python-backend-scripting-and-notebooks)
+- [Cloud-Specific Best Practices (AWS, Azure, GCP)](#cloud-specific-best-practices-aws-azure-gcp)
+- [Conclusion and Adherence](#conclusion-and-adherence)
+
 ## Introduction
 
 This document defines the coding standards for BSC Analytics engineers. The goal is to ensure our code is consistent,
