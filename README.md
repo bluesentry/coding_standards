@@ -373,21 +373,21 @@ essence, good code organization is vital for team productivity and long-term sca
 All code (including infrastructure code and notebooks) must be checked into version control (we use Git) to track
 changes and collaborate effectively. Adhere to the following practices:
 
-* **Frequent Commits with Clear Messages: Commit your work often, with each commit focusing on a logical chunk of
+* **Frequent Commits with Clear Messages:** Commit your work often, with each commit focusing on a logical chunk of
   change (e.g., a bug fix, a new function, or a refactor). Write descriptive commit messages that explain what the
   change does and why, if not obvious. A good commit message might be:
   `fix: handle null values in user input validation` rather than `update code` or `bug fix`. This helps others (and
   future you) understand the history of changes. Consider using a structured format like Conventional Commits (e.g.,
   prefix with `feat:`, `fix:`, `refactor:`) if the project follows that, as it can integrate with release tools.
-* **Branching Strategy: Use feature branches (and similarly, bugfix or hotfix branches) rather than committing directly
+* **Branching Strategy:** Use feature branches (and similarly, bugfix or hotfix branches) rather than committing directly
   to main/master branch. For example, create a branch feature/login-oauth for implementing OAuth login. This isolates
   your work and makes code review and integration safer. Merge into the main branch via Pull Requests (PRs) after
   review.
-* **Pull Request Reviews: All significant changes should be code-reviewed by at least one other engineer. This practice
+* **Pull Request Reviews:** All significant changes should be code-reviewed by at least one other engineer. This practice
   catches bugs, enforces standards, and spreads knowledge. When reviewing, ensure that the code adheres to this
   standards document (formatting, naming, etc.) and address any deviations. PR discussions should be constructive and
   focused on the code.
-* **.gitignore and Sensitive Files: Use .gitignore to exclude files that should not be in version control. This
+* **.gitignore and Sensitive Files:** Use .gitignore to exclude files that should not be in version control. This
   includes:
 
   Compiled or generated files (e.g. Python `__pycache__` directories, `.pyc` files, Node `node_modules/`, build
