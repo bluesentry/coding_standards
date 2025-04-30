@@ -206,12 +206,12 @@ why something is done if it’s not evident from the code itself. Key guidelines
 
           ```hcl
             variable "instance_count" {
-               type        = number
-               description = "Number of EC2 instances to launch for the web tier"
-               validation {
-                 condition     = var.instance_count > 0
-                 error_message = "instance_count must be a positive number"
-               }
+                     type        = number
+                     description = "Number of EC2 instances to launch for the web tier"
+                     validation {
+                       condition     = var.instance_count > 0
+                       error_message = "instance_count must be a positive number"
+                     }
             }
           ```
           The `description` explains the variable’s purpose, and even the validation error message guides the user. This
@@ -271,11 +271,11 @@ handle them gracefully instead of crashing or silently failing:
 
     ```js
     try {
-       const data = await fetchData(url);
-       renderData(data);
+             const data = await fetchData(url);
+             renderData(data);
     } catch (e) {
-       console.error("Failed to fetch data:", e.message);  // Log the error for debugging
-       showErrorToUser("Could not load data. Please check your connection.");  // User-facing message
+             console.error("Failed to fetch data:", e.message);  // Log the error for debugging
+             showErrorToUser("Could not load data. Please check your connection.");  // User-facing message
     }
     ```
 
@@ -287,16 +287,16 @@ handle them gracefully instead of crashing or silently failing:
 
     ```python
     def load_config(path):
-       try:
-           with open(path) as f:
-               return json.load(f)
-       except FileNotFoundError:
-           logging.error(f"Config file not found: {path}")
-           raise  # re-raise, maybe the caller will handle this
-       except json.JSONDecodeError as e:
-           logging.error(f"Config file {path} is not valid JSON: {e}")
-           # Return a default config or re-raise depending on criticality
-           return {}
+               try:
+                   with open(path) as f:
+                       return json.load(f)
+               except FileNotFoundError:
+                   logging.error(f"Config file not found: {path}")
+                   raise  # re-raise, maybe the caller will handle this
+               except json.JSONDecodeError as e:
+                   logging.error(f"Config file {path} is not valid JSON: {e}")
+                   # Return a default config or re-raise depending on criticality
+                   return {}
     ```
 
   Here we handle two specific exceptions: file not found and JSON parse error. Each is logged with context. The
@@ -480,7 +480,7 @@ with regulations. Some universal security coding standards:
     ```python
     API_KEY = os.environ.get("API_KEY") 
     if API_KEY is None:
-        raise RuntimeError("API_KEY not set in environment")
+               raise RuntimeError("API_KEY not set in environment")
     
     and document in README that API_KEY must be provided via environment.
     ```
@@ -621,29 +621,29 @@ languages/tools we use:
 Terraform is used to define cloud infrastructure in code. Maintaining high standards in Terraform ensures our cloud
 environments are reproducible, safe, and scalable.
 
-* **Latest Version:** Always use the latest stable version of Terraform (and relevant providers) in new projects, unless
+* **Latest Version: Always use the latest stable version of Terraform (and relevant providers) in new projects, unless
   there’s a specific need to pin to an older version. Specify the `required_version` in configuration to ensure
   consistency across team machines and CI.
-* **Formatting and Style:** Always run `terraform fmt` before committing Terraform code to automatically format it
+* **Formatting and Style: Always run `terraform fmt` before committing Terraform code to automatically format it
   according to the official style. This standardizes indentation (2 spaces) and alignment. Also run `terraform validate`
   to catch syntax errors or misordered arguments. Do not disable these; they ensure your code is syntactically correct
   and standardized.
-* **Linting:** Use TFLint to catch common Terraform issues and ensure best practices are followed. For example, TFLint can
+* **Linting: Use TFLint to catch common Terraform issues and ensure best practices are followed. For example, TFLint can
   warn if you use deprecated syntax or if an AWS resource is misconfigured. We also integrate Checkov (or similar
   security scanners like tfsec) to detect security and compliance issues (like open security group ports, unencrypted
   storage) early. These tools should be run in CI and preferably as pre-commit hooks.
-* **Modules and DRY Principle:** Structure Terraform code into reusable modules. Avoid copy-pasting resource definitions
+* **Modules and DRY Principle: Structure Terraform code into reusable modules. Avoid copy-pasting resource definitions
   for similar components – instead, factor them into a module that can be parameterized. For instance, if multiple
   projects need an S3 bucket with standard settings, create an `s3_bucket` module. Modules promote DRY (Don't Repeat
   Yourself), reduce errors, and make large configurations manageable. Organize modules in a modules/ directory or
   separate repos as appropriate. Each module should be self-contained with its `variables.tf`, `outputs.tf`, and
   `README.md` documenting usage.
-* **Environment Segregation:** Keep configurations for different environments (dev, staging, prod, etc.) separate. Use
+* **Environment Segregation: Keep configurations for different environments (dev, staging, prod, etc.) separate. Use
   either separate workspaces or separate directories (or even separate state backends) for each environment. This
   prevents changes intended for one environment from accidentally affecting another. Name resources with environment
   identifiers (prefixes/suffixes) so that, for example, a production database instance and a staging one are distinct
   and easily identifiable.
-* **Naming Conventions:** Follow a consistent naming scheme for Terraform resources:
+* **Naming Conventions: Follow a consistent naming scheme for Terraform resources:
 
     * Resource names (within the code) should be descriptive (e.g., `aws_instance "web_server"`). Use underscores to
       separate words.
@@ -758,28 +758,34 @@ code often directly impacts user experience, so clarity, performance, and safety
   Use semantic HTML elements (e.g., `<button>` for clickable actions, not <div> with an onClick). Add ARIA attributes
   where needed. Ensure the code does not create keyboard traps and that all interactive elements are reachable via
   keyboard. This is part of quality front-end code.
-* **Security (Frontend specific):** Be wary of Cross-Site Scripting (XSS). Do not insert untrusted data into the DOM
-  using innerHTML or similar without sanitization. If using frameworks like React, this is mostly handled (React escapes
-  content by default). If you must insert raw HTML (e.g., using `dangerouslySetInnerHTML` in React or setting
-  `.innerHTML` manually), make sure the content is from a trusted source or sanitized. Avoid using `eval()` or new
-  Function() with dynamic code. If you are processing JSON, use `JSON.parse` (which is safe for JSON) rather than `eval`
-  on a JSON string. Keep dependencies updated (front-end frameworks, build tools) to get security patches, since
-  front-end dependencies can also have vulnerabilities.
+* **Security (Frontend specific):**
 
-* **Performance Best Practices:** Use asynchronous techniques to keep the UI responsive. For example, don't do heavy
-  computations on the main thread; if needed, use Web Workers for CPU-intensive tasks so the UI doesn't freeze. Optimize
-  network calls: bundle multiple requests if possible, or use GraphQL to fetch in one round-trip instead of many (if
-  applicable), use caching (browser cache or service workers for offline). Minimize reflows: if manipulating DOM
-  manually, batch updates (e.g., use `document.createDocumentFragment` to append multiple elements off-DOM, then attach
-  once). Images: use proper image sizes (don’t load a huge image if a thumbnail is enough), compress images, use modern
-  formats (WebP/AVIF). Consider using lazy loading for components not immediately needed (code-splitting in SPAs) to
-  reduce initial load times.
+  Be wary of Cross-Site Scripting (XSS). Do not insert untrusted data into the DOM using innerHTML or similar without
+  sanitization. If using frameworks like React, this is mostly handled (React escapes content by default). If you must
+  insert raw HTML (e.g., using `dangerouslySetInnerHTML` in React or setting `.innerHTML` manually), make sure the
+  content is from a trusted source or sanitized.
+  Avoid using `eval()` or new Function() with dynamic code. If you are processing JSON, use `JSON.parse` (which is safe
+  for JSON) rather than `eval` on a JSON string.
+  Keep dependencies updated (front-end frameworks, build tools) to get security patches, since front-end dependencies
+  can also have vulnerabilities.
+
+* **Performance Best Practices:**
+
+  Use asynchronous techniques to keep the UI responsive. For example, don't do heavy computations on the main thread; if
+  needed, use Web Workers for CPU-intensive tasks so the UI doesn't freeze.
+  Optimize network calls: bundle multiple requests if possible, or use GraphQL to fetch in one round-trip instead of
+  many (if applicable), use caching (browser cache or service workers for offline).
+  Minimize reflows: if manipulating DOM manually, batch updates (e.g., use `document.createDocumentFragment` to append
+  multiple elements off-DOM, then attach once).
+  Images: use proper image sizes (don’t load a huge image if a thumbnail is enough), compress images, use modern
+  formats (WebP/AVIF).
+  Consider using lazy loading for components not immediately needed (code-splitting in SPAs) to reduce initial load
+  times.
 
 * **Testing:** Write front-end tests (unit tests for logic, component tests for React, and possibly end-to-end tests for
   user flows). While not purely a coding standard, having tests ensures code is working as expected. Use Jest/Mocha for
   unit tests and tools like React Testing Library for components. This also forces better code structure (e.g.,
   decoupling logic from the DOM, so it’s easier to test).
-
 * **Example – Clean and Modern JS:**
 
     ```js
