@@ -221,7 +221,8 @@ why something is done if it’s not evident from the code itself. Key guidelines
       and in English). This ensures the documentation is professional and understandable. For short inline comments,
       phrase can be fragmentary but should still be clear (e.g. `# compensate for border offset`).
     * **Avoid Redundant Comments:** Don’t state the obvious. For example, `i = i + 1 # increment i` is not useful.
-      Instead, explain why something is done if it’s not obvious.
+      Instead, explain why something is done if it’s not obvious. Logging statements, written well, can replace some
+      comments.
     * **Update Documentation:** If you find an important gotcha or assumption in the code, document it. Conversely, if
       code is refactored and a comment becomes irrelevant, remove it. Treat documentation as part of the codebase that
       requires maintenance.
@@ -239,28 +240,34 @@ Robust error handling is critical for building reliable systems. Code should ant
 handle them gracefully instead of crashing or silently failing:
 
 * **Never Ignore Failures:** Check return values and catch exceptions where errors are expected or possible. Do not just
-  assume an operation will always succeed. If an error can occur, handle it – either by retrying, logging, presenting an
-  error message to the user, or cleanly shutting down. For example, if a file read might fail, wrap it in a try/except (
-  Python) or try/catch (JS) block.
+  assume an operation will always succeed. If an error can occur, handle it – either by retrying, providing an error
+  handling functio to correct the problem, presenting an error message to the user, or cleanly shutting down. For example,
+  if a file read might fail, wrap it in a try/except (  Python) or try/catch (JS) block. Always log error messages but
+  just logging is almost never sufficient to bring awareness to the problem, as the error message may go undetected in a log.
 * **Catch Specific Exceptions:** When catching exceptions, catch the most specific exception class that you can handle,
   rather than a blanket catch-all. This prevents unrelated errors from being accidentally swallowed. For instance, in
   Python if you expect a `KeyError`, catch that specifically instead of a generic `Exception`. Likewise, in JavaScript,
   catch specific error conditions if you can differentiate them. This approach is emphasized in Google’s standards:
   _“Always catch the most specific type of Exception, instead of a more general one.”_ A specific catch lets you handle
-  that case properly while letting unexpected issues bubble up.
+  that case properly while letting unexpected issues bubble up. Do allow for the outermost control block of your program
+  to capture more generic exceptions; this enables resource cleanup and prevents silent failure.
 * **Provide Useful Error Messages:** When throwing or logging errors, include context to aid debugging. For example,
   `"Invalid user ID provided to getProfile"` is more helpful than `"Error in getProfile"` with no details. In Terraform,
   use the `error_message` in `validation` blocks to guide the user as shown above. Clear messages make it easier to
-  diagnose issues in testing and production.
+  diagnose issues in testing and production. Include variables that will be relevant to someone debugging; while writing
+  code you know which variables are important but later someone may have to trace through layers of code to understand the
+  context.
 * **Fail Fast, Fail Safe:** If a function receives bad input, it should quickly raise an error (with an informative
   message) rather than proceeding in a bad state. This “fail fast” principle localizes errors to their source.
   Conversely, in long-running systems or when interacting with external services, use safe fallbacks – e.g., if a config
   file is missing, maybe load defaults and log a warning rather than crashing entirely (depending on context).
 * **Logging and Monitoring:** Where appropriate, log errors along with the context (but avoid logging sensitive data).
-  In backend Python services, use the `logging` library to record exceptions and events (with stack traces on debug
-  level if needed). In front-end JS, you might not log to console for every handled error (to avoid exposing internals),
-  but ensure the UI can inform the user. For example, if an API call fails, catch the error and display a user-friendly
-  message like “Unable to load data, please try again.”
+  In backend Python services, use the `logging` library to record exceptions and events. Use logging statements with
+  relevant values at critical points with "DEBUG" log level to help narrow down the code section causing a problem.
+  Your log statement is the only thing that a person can "see" while troubleshooting. And, this level can be
+  disabled or filtered at run time when not needed. In front-end JS, you might not log to console for every handled
+  error (to avoid exposing internals),  but ensure the UI can inform the user. For example, if an API call fails, catch
+  the error and display a user-friendly message like “Unable to load data, please try again.”
 * **No Silent Failures:** Do not write code that catches an exception and then does nothing (or just a comment like
   `// ignore`). If truly an error is safe to ignore, at minimum add a comment explaining why it's safe to ignore.
   Ideally, even ignored errors should be logged or counted (to detect if they happen frequently).
@@ -998,9 +1005,9 @@ Azure, and GCP (with slight variations as noted):
 
     * Use managed identities and roles instead of embedding credentials. For AWS, prefer IAM roles (attached to EC2
       instances or Lambda functions) to give permissions, rather than using access key ID and secret. For Azure, use
-      Managed Service Identity for VMs or functions. GCP uses service accounts. In all cases, scope the permissions
-      narrowly (least privilege principle). For example, if a function only needs read access to a storage bucket, do
-      not grant it write or admin rights.
+      Managed Identity for VMs, containers, and functions; prefer Azure built-in Roles GCP uses service accounts. In
+      all cases, scope the permissions narrowly (least privilege principle). For example, if a function only needs
+      read access to a storage bucket, do not grant it write or admin rights.
     * Store sensitive configuration in cloud secret managers: AWS Secrets Manager or SSM Parameter Store, Azure Key
       Vault, Google Secret Manager. The code can retrieve secrets at runtime (with the appropriate IAM permissions)
       rather than having them in code or config files. This centralizes audit and rotation of secrets.
@@ -1019,19 +1026,19 @@ Azure, and GCP (with slight variations as noted):
       calls or use their provided SDK methods for retries.
     * Use cloud-native features for reliability: e.g., AWS offers Auto Scaling groups – our Terraform code should
       configure auto-scaling for stateless servers to handle load, rather than assuming fixed capacity. Use load
-      balancers (ELB/ALB, Azure ALB, GCP LB) instead of a single server address. In code, that means perhaps just
+      balancers (ELB/ALB, Azure Load Balancer, GCP LB) instead of a single server address. In code, that means perhaps just
       ensuring endpoints or configurations are not hardcoded to a single instance.
     * Multi-AZ and backups: For databases and critical services, deploy multi-AZ (or multi-region if needed) for high
       availability. Our Terraform should by default prefer multi-AZ where it makes sense (like RDS, Azure SQL, etc.).
       Also ensure backups are enabled (DB snapshots, etc.). If writing scripts to manipulate data, consider the impact
       on replicas or across regions.
     * Monitoring and Logging: Implement logging and metrics for cloud deployments. For AWS, ensure CloudWatch Logs are
-      capturing logs from Lambda or EC2. For Azure, use Application Insights or Log Analytics. For GCP, use
-      Stackdriver (Cloud Logging/Monitoring). From a coding perspective, that means using the cloud SDK or environment
-      to log in a structured way (e.g., printing JSON logs that CloudWatch can parse, or using an official logging
-      library to send logs). Also, add application-level metrics where appropriate (for instance, a Python service might
-      use CloudWatch custom metrics or Prometheus to track key metrics). Monitoring allows us to catch issues early and
-      auto-scale or alert as needed.
+      capturing logs from Lambda or EC2. For Azure, use Log Analytics and consider Application Insights, enabling all
+      diagnostic settings on your resource. For GCP, use Stackdriver (Cloud Logging/Monitoring). From a coding perspective,
+      that means using the cloud SDK or environment to log in a structured way (e.g., printing JSON logs that CloudWatch
+      can parse, or using an official logging library to send logs). Also, add application-level metrics where appropriate
+      (for instance, a Python service might use CloudWatch custom metrics or Prometheus to track key metrics). Monitoring
+      allows us to catch issues early and auto-scale or alert as needed.
 
 * **Cost Optimization:**
 
