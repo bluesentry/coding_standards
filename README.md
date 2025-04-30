@@ -221,7 +221,8 @@ why something is done if it’s not evident from the code itself. Key guidelines
       and in English). This ensures the documentation is professional and understandable. For short inline comments,
       phrase can be fragmentary but should still be clear (e.g. `# compensate for border offset`).
     * **Avoid Redundant Comments:** Don’t state the obvious. For example, `i = i + 1 # increment i` is not useful.
-      Instead, explain why something is done if it’s not obvious.
+      Instead, explain why something is done if it’s not obvious. Logging statements, written well, can replace some
+      comments.
     * **Update Documentation:** If you find an important gotcha or assumption in the code, document it. Conversely, if
       code is refactored and a comment becomes irrelevant, remove it. Treat documentation as part of the codebase that
       requires maintenance.
@@ -253,16 +254,20 @@ handle them gracefully instead of crashing or silently failing:
 * **Provide Useful Error Messages:** When throwing or logging errors, include context to aid debugging. For example,
   `"Invalid user ID provided to getProfile"` is more helpful than `"Error in getProfile"` with no details. In Terraform,
   use the `error_message` in `validation` blocks to guide the user as shown above. Clear messages make it easier to
-  diagnose issues in testing and production.
+  diagnose issues in testing and production. Include variables that will be relevant to someone debugging; while writing
+  code you know which variables are important but later someone may have to trace through layers of code to understand the
+  context.
 * **Fail Fast, Fail Safe:** If a function receives bad input, it should quickly raise an error (with an informative
   message) rather than proceeding in a bad state. This “fail fast” principle localizes errors to their source.
   Conversely, in long-running systems or when interacting with external services, use safe fallbacks – e.g., if a config
   file is missing, maybe load defaults and log a warning rather than crashing entirely (depending on context).
 * **Logging and Monitoring:** Where appropriate, log errors along with the context (but avoid logging sensitive data).
-  In backend Python services, use the `logging` library to record exceptions and events (with stack traces on debug
-  level if needed). In front-end JS, you might not log to console for every handled error (to avoid exposing internals),
-  but ensure the UI can inform the user. For example, if an API call fails, catch the error and display a user-friendly
-  message like “Unable to load data, please try again.”
+  In backend Python services, use the `logging` library to record exceptions and events. Use logging statements with
+  relevant values at critical points with "DEBUG" log level to help narrow down the code section causing a problem.
+  Your log statement is the only thing that a person can "see" while troubleshooting. And, this level can be
+  disabled or filtered at run time when not needed. In front-end JS, you might not log to console for every handled
+  error (to avoid exposing internals),  but ensure the UI can inform the user. For example, if an API call fails, catch
+  the error and display a user-friendly message like “Unable to load data, please try again.”
 * **No Silent Failures:** Do not write code that catches an exception and then does nothing (or just a comment like
   `// ignore`). If truly an error is safe to ignore, at minimum add a comment explaining why it's safe to ignore.
   Ideally, even ignored errors should be logged or counted (to detect if they happen frequently).
