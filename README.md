@@ -329,10 +329,9 @@ codebases:
   needed.
 * **Project Structure:** Adopt a standard project layout:
 
-    * _Terraform:_ Arrange Terraform configurations into directories by environment or component. For instance, you
-      might have a top-level `prod/` and `dev/` directory, each with Terraform modules or configurations for that
-      environment. Within a module, use a standard file naming: `main.tf` for main resources, `variables.tf` for inputs,
-      `outputs.tf` for outputs, and `README.md` for documentation. A consistent structure makes it easy to find things (
+    * _Terraform:_ Arrange Terraform configurations into directories with variable files in environment folders. For instance, you
+      might have a top-level `environments/`, which contains a `prod/`, `uat/`, and`dev/` directory, each with tf variables files with values for the specified
+      environment. Within a module, use a standard file naming convention where the filename indicates the resource its primarily responsible for. For example: `s3.tf`, `networking.tf`(responsible for VPC and subnets), `lambda.tf`, `provider.tf`, `data,tf`, `locals,tf`, `variables.tf`, and `outputs.tf`. Always include a `README.md` for documentation. A consistent structure makes it easy to find things (
       inputs, outputs, etc.) and supports reusability.
     * _Python:_ Use a package structure for projects (a root package directory with an `__init__.py`). Within the
       package, group related functionality into subpackages or modules. For example, keep database models in one module,
@@ -384,7 +383,7 @@ changes and collaborate effectively. Adhere to the following practices:
   change (e.g., a bug fix, a new function, or a refactor). Write descriptive commit messages that explain what the
   change does and why, if not obvious. A good commit message might be:
   `fix: handle null values in user input validation` rather than `update code` or `bug fix`. This helps others (and
-  future you) understand the history of changes. Consider using a structured format like Conventional Commits (e.g.,
+  future you) understand the history of changes. Consider using a structured format like [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) (e.g.,
   prefix with `feat:`, `fix:`, `refactor:`) if the project follows that, as it can integrate with release tools.
 * **Branching Strategy:** Use feature branches (and similarly, bugfix or hotfix branches) rather than committing directly
   to main/master branch. For example, create a branch feature/login-oauth for implementing OAuth login. This isolates
@@ -688,27 +687,30 @@ environments are reproducible, safe, and scalable.
 
     ```text
     infra/
-      networking/
-         main.tf
-         variables.tf
-         outputs.tf
-         README.md  (documentation of module usage)
-      compute/
-         main.tf
-         variables.tf
-         outputs.tf
-         README.md
-      prod/
-         main.tf   (calls modules networking, compute with prod-specific vars)
-         providers.tf (providers and backend config)
-         terraform.tfvars (prod specific variable values)
-      dev/
-         main.tf (calls modules with dev vars)
-         providers.tf
-         terraform.tfvars
+      modules/
+        networking/
+          vpc.tf
+          subnet.tf
+          variables.tf
+          outputs.tf
+          README.md  (documentation of module usage)
+        compute/
+          ec2.tf
+          variables.tf
+          outputs.tf
+          README.md
+      environments/
+        dev/
+          dev.tfvars
+        prod/
+          prod.tfvars
+      networking.tf
+      compute.tf
+      provider.tf
+      README.md        
     ```
 
-  In this layout, `networking` and `compute` are modules, and `prod` and `dev` are environment-specific configurations
+  In this layout, `networking` and `compute` are modules, and `prod` and `dev` folders are environment-specific configurations
   that instantiate those modules. This ensures a clear separation of concerns and reusability.
 
 _Rationale:_ Terraform code manages critical infrastructure; thus, consistency and correctness are paramount. Using
